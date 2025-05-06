@@ -6,38 +6,38 @@ const FOCUS_TIME = 25 * 60;
 const BREAK_TIME = 5 * 60;
 
 export default function Home() {
-  const [timeLeft, setTimeLeft] = useState(FOCUS_TIME);
-  const [isRunning, setIsRunning] = useState(false);
+  const [remainingTime, setremainingTime] = useState(FOCUS_TIME);
+  const [isTimerActive, setisTimerActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
-  const [sessionCount, setSessionCount] = useState(0);
+  const [completedSessions, setcompletedSessions] = useState(0);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("sessionCount");
-      setSessionCount(saved ? parseInt(saved) : 0);
+      const saved = localStorage.getItem("completedSessions");
+      setcompletedSessions(saved ? parseInt(saved) : 0);
     }
   }, []);
 
   useEffect(() => {
     let timer;
-    if (isRunning && timeLeft > 0) {
+    if (isTimerActive && remainingTime > 0) {
       timer = setInterval(() => {
-        setTimeLeft((t) => t - 1);
+        setremainingTime((t) => t - 1);
       }, 1000);
-    } else if (timeLeft === 0) {
+    } else if (remainingTime === 0) {
       const nextIsBreak = !isBreak;
       setIsBreak(nextIsBreak);
-      setTimeLeft(nextIsBreak ? BREAK_TIME : FOCUS_TIME);
+      setremainingTime(nextIsBreak ? BREAK_TIME : FOCUS_TIME);
       if (!nextIsBreak && typeof window !== "undefined") {
-        setSessionCount((prev) => {
+        setcompletedSessions((prev) => {
           const updated = prev + 1;
-          localStorage.setItem("sessionCount", updated.toString());
+          localStorage.setItem("completedSessions", updated.toString());
           return updated;
         });
       }
     }
     return () => clearInterval(timer);
-  }, [isRunning, timeLeft, isBreak]);
+  }, [isTimerActive, remainingTime, isBreak]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
@@ -48,7 +48,7 @@ export default function Home() {
   };
 
   const total = isBreak ? BREAK_TIME : FOCUS_TIME;
-  const percentage = ((total - timeLeft) / total) * 100;
+  const percentage = ((total - remainingTime) / total) * 100;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 p-4">
@@ -80,20 +80,20 @@ export default function Home() {
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center text-3xl font-mono text-indigo-700">
-              {formatTime(timeLeft)}
+              {formatTime(remainingTime)}
             </div>
           </div>
           <div className="flex gap-4">
             <button
-              onClick={() => setIsRunning(!isRunning)}
+              onClick={() => setisTimerActive(!isTimerActive)}
               className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer"
             >
-              {isRunning ? "Pause" : "Start"}
+              {isTimerActive ? "Pause" : "Start"}
             </button>
             <button
               onClick={() => {
-                setIsRunning(false);
-                setTimeLeft(isBreak ? BREAK_TIME : FOCUS_TIME);
+                setisTimerActive(false);
+                setremainingTime(isBreak ? BREAK_TIME : FOCUS_TIME);
               }}
               className="px-4 py-2 rounded-lg border border-indigo-600 text-indigo-600 hover:bg-indigo-100 transition cursor-pointer"
             >
@@ -102,7 +102,7 @@ export default function Home() {
           </div>
           <div className="text-sm text-gray-500 mt-6">
             Sessions completed:{" "}
-            <span className="font-semibold text-indigo-700">{sessionCount}</span>
+            <span className="font-semibold text-indigo-700">{completedSessions}</span>
           </div>
         </div>
       </div>
